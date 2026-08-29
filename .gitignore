@@ -19,6 +19,7 @@ local.sqlite3
 .env
 .env.*
 !.env.example
+!.env.prod.example
 
 # Тесты / покрытие
 .pytest_cache/
@@ -36,3 +37,7 @@ Thumbs.db
 
 # Служебное
 _template/
+
+# продакшн-секреты
+.env.prod
+backup_*.sql
