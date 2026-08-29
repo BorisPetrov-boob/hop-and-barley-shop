@@ -45,7 +45,6 @@
 * [CI/CD](#cicd)
 * [Git workflow](#git-workflow)
 * [Чек‑лист по ТЗ](#чек-лист-по-тз)
-* [Прогон чек‑листа перед сдачей](#прогон-чек-листа-перед-сдачей)
 
 ---
 
@@ -375,42 +374,3 @@ make type        # mypy
 - [x] Инфраструктура: PostgreSQL, Docker Compose, `pyproject.toml` + `uv.lock`
 - [x] Качество: типизация, ruff, mypy, pytest (покрытие ≈88 %)
 - [x] Бонусы: GraphQL‑аналитика, CI (линт + типы + тесты на PostgreSQL + сборка образа), менеджер зависимостей **uv**
-
----
-
-## Прогон чек‑листа перед сдачей
-
-Проверено **2026‑08‑30** на **свежем клоне репозитория** (`git clone` → `docker compose up --build`),
-БД — PostgreSQL 17 в контейнере. Коммит: `bfe6ff1`.
-
-| Пункт | Статус | Как проверено |
-|-------|--------|---------------|
-| Запуск через Docker Compose на чистой копии | ✅ | `git clone … && cp .env.example .env && docker compose up --build`: образ собран, `db` healthy, `entrypoint.sh` → `migrate` → `collectstatic` (207 файлов) → `seed_demo` → `gunicorn`; `GET /` = 200 |
-| PostgreSQL используется | ✅ | `connection.vendor == "postgresql"`, сервер `PostgreSQL 17.11`; таблицы `products_product` (12), `products_category` (4) заполнены сидом |
-| Каталог: фильтры, поиск, пагинация | ✅ | `GET /products/?category=hops&price_min=&price_max=&search=&sort=price_asc` = 200; пагинация 12/стр. (`is_paginated=True`); покрыто `tests/test_catalog.py` |
-| Страница товара: детали, отзывы, в корзину | ✅ | `GET /product/citra-hops/` = 200 — описание, отзывы, похожие товары, форма выбора количества |
-| Корзина: управление, расчёт, остатки | ✅ | add/update/remove в сессии, количество ограничивается `stock`, `cart.total` и `has_stock_issues`; `tests/test_cart.py` |
-| Оформление: создание, email, валидация | ✅ | В контейнере `POST /api/orders/` = 201 (снапшот цены `5.99`, `subtotal 11.98`); в логах `web` — **2 письма** (покупателю и админу, через `transaction.on_commit`); `CheckoutForm` валидирует поля |
-| Личный кабинет: регистрация, вход, история, редактирование | ✅ | `register → JWT login → POST /api/orders/ → GET /api/orders/` = count 1 (только свои заказы); веб: `/account/` = 302 для гостя, профиль и смена пароля работают; `tests/test_users.py` |
-| REST API: JWT, документация, права | ✅ | `POST /api/users/login/` выдаёт `access`+`refresh`; `GET /api/orders/` = 401 без токена, queryset фильтруется по `request.user`; отзыв через API — только после покупки |
-| Админка: аналитика, фильтры, управление | ✅ | Вход суперпользователем; в списке товаров колонки **«Продано»** и **«Выручка»** (аннотации ORM), над списком заказов — сводка «выручка / кол‑во / средний чек»; кастомные actions и фильтры на месте |
-| Swagger/OpenAPI работает | ✅ | `/api/docs/`, `/api/redoc/`, `/api/schema/` = 200; `manage.py spectacular --validate` — без предупреждений |
-| Типизация и докстринги | ✅ | Аннотации во всей бизнес‑логике; module‑docstrings во всех содержательных модулях |
-| Линтеры (ruff / mypy) без критичных ошибок | ✅ | `ruff check` — чисто, `ruff format --check` — чисто, `mypy` — `Success: no issues found in 75 source files` |
-| Базовые тесты проходят | ✅ | `pytest`: **52 passed**, покрытие **88 %** (порог CI — 80 %); прогнано и на SQLite, и на PostgreSQL из compose |
-| README полон и понятен | ✅ | Этот файл: запуск (Docker/uv), переменные, модель данных, API + примеры curl с JWT, GraphQL, CI, чек‑лист |
-| Коммиты осмысленные, ветки используются | ✅ | `main` ← `develop` ← 6 × `feature/*` (merge `--no-ff`), сообщения в стиле Conventional Commits |
-| Чек‑лист приложен | ✅ | Разделы [«Чек‑лист по ТЗ»](#чек-лист-по-тз) и этот прогон |
-
-Дополнительно: `manage.py check --deploy --fail-level WARNING` в `config.settings.prod` — **0 issues**
-(HSTS, SSL‑redirect, secure‑cookies включены).
-
-Найдено и исправлено при прогоне: `?ordering=-price` в API отдавал `400` из‑за двух
-конкурирующих обработчиков сортировки (`django-filter` + DRF). Оставлен только
-`OrderingFilter` DRF (коммит `86dc723`).
-
----
-
-## Лицензия
-
-MIT.
