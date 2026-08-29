@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}Личный кабинет | Hop & Barley{% endblock %}
+{% block main_attrs %} class="account-page-wrapper"{% endblock %}
+
+{% block content %}
+<div class="account-container">
+  <div class="account-tabs">
+    <button class="account-tab active" data-tab-target="#order-history">История заказов</button>
+    <button class="account-tab" data-tab-target="#account-info">Профиль</button>
+  </div>
+
+  <div class="tab-content">
+    <div id="order-history" class="tab-pane active">
+      <form method="get" style="margin-bottom:16px;">
+        <label class="muted" for="status">Фильтр по статусу:</label>
+        <select name="status" id="status" onchange="this.form.submit()">
+          <option value="">Все</option>
+          {% for value, label in status_choices %}
+            <option value="{{ value }}" {% if active_status == value %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </form>
+
+      <div class="order-history-table">
+        <div class="order-table-header">
+          <div class="order-table-cell">Заказ</div>
+          <div class="order-table-cell">Статус</div>
+          <div class="order-table-cell">Сумма</div>
+        </div>
+        <div class="order-table-body">
+          {% for order in orders %}
+            <div class="order-table-row">
+              <div class="order-table-cell">
+                <span class="order-id">{{ order.number }}</span>
+                <span class="order-date">{{ order.created_at|date:"d.m.Y" }}</span>
+                <div class="muted">
+                  {% for item in order.items.all %}{{ item.product.name }} ×{{ item.quantity }}{% if not forloop.last %}, {% endif %}{% endfor %}
+                </div>
+              </div>
+              <div class="order-table-cell"><span class="order-status">{{ order.get_status_display }}</span></div>
+              <div class="order-table-cell"><span class="order-total">${{ order.total_price|floatformat:2 }}</span></div>
+            </div>
+          {% empty %}
+            <div class="order-table-row"><div class="order-table-cell muted">Заказов пока нет.</div></div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <div id="account-info" class="tab-pane">
+      <div class="account-form-container">
+        <h2 class="account-form-title">Личные данные</h2>
+        <form method="post" action="{% url 'users:profile' %}">
+          {% csrf_token %}
+          {% for field in profile_form %}
+            <div class="checkout-form-group">
+              <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+              {{ field }}
+              {% if field.errors %}<div class="form-errors">{{ field.errors }}</div>{% endif %}
+            </div>
+          {% endfor %}
+          <button type="submit" class="button button--primary button--full-width">Сохранить</button>
+        </form>
+        <p style="margin-top:12px;">
+          <a href="{% url 'users:password_change' %}" class="button button--secondary button--full-width">Сменить пароль</a>
+        </p>
+        <form method="post" action="{% url 'users:logout' %}" style="margin-top:8px;">
+          {% csrf_token %}
+          <button type="submit" class="button button--secondary button--full-width">Выйти</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

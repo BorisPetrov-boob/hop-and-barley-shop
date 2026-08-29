@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Вход | Hop & Barley{% endblock %}
+{% block main_attrs %} class="auth-page-wrapper"{% endblock %}
+
+{% block content %}
+<div class="auth-background">
+  <img src="{% static 'img/background/pattern.jpg' %}" alt="">
+</div>
+<div class="auth-form-container">
+  <div class="auth-container auth-container--login">
+    <div class="Legend"><h1 class="auth-title">Вход</h1></div>
+
+    <form class="auth-form" method="post" action="{% url 'users:login' %}">
+      {% csrf_token %}
+      {% if form.non_field_errors %}<div class="form-errors">{{ form.non_field_errors }}</div>{% endif %}
+      <div class="InputField">
+        <label for="{{ form.username.id_for_label }}">Email</label>
+        {{ form.username }}
+        {{ form.username.errors }}
+      </div>
+      <div class="InputField">
+        <label for="{{ form.password.id_for_label }}">Пароль</label>
+        {{ form.password }}
+        {{ form.password.errors }}
+      </div>
+      <input type="hidden" name="next" value="{{ next }}">
+      <div class="ButtonGroup">
+        <button type="submit" class="button button--primary">Войти</button>
+      </div>
+    </form>
+
+    <p class="auth-switch">Нет аккаунта? <a href="{% url 'users:register' %}">Зарегистрироваться</a></p>
+  </div>
+</div>
+{% endblock %}
