@@ -277,7 +277,7 @@ curl -X POST http://localhost:8000/api/orders/ \
 
 ---
 
-## GraphQL‑аналитика (бонус)
+## GraphQL‑аналитика
 
 Единый эндпоинт **`/graphql/`**. Доступ — только пользователям с `is_staff`
 (аутентификация: сессия Django **или** JWT `Bearer`).
@@ -324,31 +324,12 @@ make fmt         # ruff format + ruff check --fix
 make type        # mypy
 ```
 
-* **pytest-django**, ~50 тестов, покрытие **≈88 %** (`--cov-fail-under=80` в CI).
-  Сценарии: каталог (фильтры/поиск/сортировка/пагинация), корзина (в т.ч.
-  лимит остатка), оформление заказа (транзакция, списание/возврат остатков,
-  письма, «нельзя заказать больше, чем есть»), регистрация/вход (web + JWT),
-  отзывы (только после покупки, без дублей), права в API, GraphQL (доступ
-  только для staff), management‑команда `seed_demo`.
-* **ruff** — линт (правила pycodestyle/pyflakes/bugbear/django/isort/…) и
-  форматирование; заменяет flake8/isort/black.
-* **mypy** + `django-stubs` + `djangorestframework-stubs`. Бизнес‑логика
-  (`services`, `cart`, `querysets`, `models`, `forms`, `schema`) типизирована
-  и проверяется; тонкий «клеевой» слой Django/DRF (CBV/ViewSet/urls) исключён
-  из строгой проверки — там stubs дают ложные срабатывания (см. комментарий в
-  `pyproject.toml`).
-
-Типизация: аннотации во всех функциях бизнес‑логики, докстринги — у публичных
-модулей, сервисов и нетривиальных методов.
-
----
-
 ## CI/CD
 
-`.github/workflows/ci.yml` — три задания:
+`.github/workflows/ci.yml`
 
 1. **quality** — `ruff check`, `ruff format --check`, `mypy`;
-2. **test** — `makemigrations --check` + `pytest` с покрытием против
+2. **test** — `makemigrations --check` + `pytest` 
    **реального PostgreSQL** (service container), порог 80 %;
 3. **docker** — сборка образа (`docker/build-push-action`, кеш GHA).
 
