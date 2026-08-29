@@ -12,17 +12,43 @@
   <div class="auth-container auth-container--register">
     <div class="Legend"><h1 class="auth-title">Регистрация</h1></div>
 
-    <form class="auth-form" method="post" action="{% url 'users:register' %}">
+    {% if form.errors %}
+      <div class="form-alert" role="alert">
+        <strong>Не удалось зарегистрироваться:</strong>
+        <ul>
+          {% for field in form %}
+            {% for error in field.errors %}<li>{{ field.label }}: {{ error }}</li>{% endfor %}
+          {% endfor %}
+          {% for error in form.non_field_errors %}<li>{{ error }}</li>{% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+
+    <form class="auth-form" method="post" action="{% url 'users:register' %}" novalidate>
       {% csrf_token %}
-      {% if form.non_field_errors %}<div class="form-errors">{{ form.non_field_errors }}</div>{% endif %}
-      {% for field in form %}
-        <div class="InputField">
-          <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-          {{ field }}
-          {% if field.help_text %}<small class="muted">{{ field.help_text|safe }}</small>{% endif %}
-          {% if field.errors %}<div class="form-errors">{{ field.errors }}</div>{% endif %}
-        </div>
-      {% endfor %}
+
+      <div class="InputField">
+        <label for="{{ form.email.id_for_label }}">Email</label>
+        {{ form.email }}
+      </div>
+      <div class="InputField">
+        <label for="{{ form.first_name.id_for_label }}">Имя</label>
+        {{ form.first_name }}
+      </div>
+      <div class="InputField">
+        <label for="{{ form.phone.id_for_label }}">Телефон</label>
+        {{ form.phone }}
+      </div>
+      <div class="InputField">
+        <label for="{{ form.password1.id_for_label }}">Пароль</label>
+        {{ form.password1 }}
+        <small class="muted">Минимум 8 символов, не только цифры, не слишком простой и не похожий на email.</small>
+      </div>
+      <div class="InputField">
+        <label for="{{ form.password2.id_for_label }}">Повторите пароль</label>
+        {{ form.password2 }}
+      </div>
+
       <div class="ButtonGroup">
         <button type="submit" class="button button--primary">Создать аккаунт</button>
       </div>
