@@ -85,7 +85,14 @@ warn_return_any = false
 exclude = ['/migrations/', '_template', 'tests/', 'manage.py']
 
 [[tool.mypy.overrides]]
-module = ["graphene_django.*", "graphene.*", "factory.*", "environ.*"]
+module = [
+    "graphene_django.*",
+    "graphene.*",
+    "factory.*",
+    "environ.*",
+    "django_filters",
+    "django_filters.*",
+]
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]

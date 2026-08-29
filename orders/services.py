@@ -106,9 +106,7 @@ def _decremented(product: Product, qty: int) -> Product:
     return product
 
 
-def create_order_from_cart(
-    *, user: User, cart: Cart, checkout: dict[str, str]
-) -> Order:
+def create_order_from_cart(*, user: User, cart: Cart, checkout: dict[str, str]) -> Order:
     """Адаптер: превратить корзину-сессию в заказ."""
     if cart.is_empty:
         raise EmptyCartError

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-import django_filters as filters
+import django_filters as filters  # type: ignore[import-untyped]
 
 from .models import Category, Product
 
