@@ -29,6 +29,8 @@ class ProductReviewListCreateView(generics.ListCreateAPIView[Review]):
         return get_object_or_404(Product.objects.active(), pk=self.kwargs["product_id"])
 
     def get_queryset(self) -> QuerySet[Review]:
+        if getattr(self, "swagger_fake_view", False):  # генерация схемы без URL-kwargs
+            return Review.objects.none()
         return (
             Review.objects.filter(product_id=self.kwargs["product_id"])
             .select_related("user")

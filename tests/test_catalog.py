@@ -90,3 +90,20 @@ def test_api_product_detail(api_client, product):
     assert resp.status_code == 200
     assert resp.data["slug"] == product.slug
     assert "description" in resp.data
+
+
+def test_api_product_ordering(api_client, category):
+    ProductFactory(name="A", price=Decimal("30.00"), category=category)
+    ProductFactory(name="B", price=Decimal("10.00"), category=category)
+    ProductFactory(name="C", price=Decimal("20.00"), category=category)
+    resp = api_client.get("/api/products/", {"ordering": "-price"})
+    assert resp.status_code == 200
+    prices = [float(r["price"]) for r in resp.data["results"]]
+    assert prices == sorted(prices, reverse=True)
+
+
+def test_api_product_filter_by_price(api_client, category):
+    ProductFactory(name="Дешёвый", price=Decimal("2.00"), category=category)
+    ProductFactory(name="Дорогой", price=Decimal("50.00"), category=category)
+    resp = api_client.get("/api/products/", {"price_min": "10", "price_max": "100"})
+    assert [r["name"] for r in resp.data["results"]] == ["Дорогой"]
