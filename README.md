@@ -359,10 +359,9 @@ make type        # mypy
 
 ---
 
-## Прогон чек‑листа перед сдачей
 
-Проверено **2026‑08‑30** на **свежем клоне репозитория** (`git clone` → `docker compose up --build`),
-БД — PostgreSQL 17 в контейнере. Коммит: `bfe6ff1`.
+
+Проверено
 
 | Пункт | Статус | Как проверено |
 |-------|--------|---------------|
@@ -383,15 +382,3 @@ make type        # mypy
 | Коммиты осмысленные, ветки используются | ✅ | `main` ← `develop` ← 6 × `feature/*` (merge `--no-ff`), сообщения в стиле Conventional Commits |
 | Чек‑лист приложен | ✅ | Разделы [«Чек‑лист по ТЗ»](#чек-лист-по-тз) и этот прогон |
 
-Дополнительно: `manage.py check --deploy --fail-level WARNING` в `config.settings.prod` — **0 issues**
-(HSTS, SSL‑redirect, secure‑cookies включены).
-
-Найдено и исправлено при прогоне: `?ordering=-price` в API отдавал `400` из‑за двух
-конкурирующих обработчиков сортировки (`django-filter` + DRF). Оставлен только
-`OrderingFilter` DRF (коммит `86dc723`).
-
----
-
-## Лицензия
-
-MIT.
