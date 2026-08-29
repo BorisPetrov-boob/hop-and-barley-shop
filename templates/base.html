@@ -40,13 +40,17 @@
     </div>
 
     <div class="header__user-actions" id="auth-user">
-      <a href="{% url 'users:account' %}" class="user-icon" aria-label="My Account">
-        <img src="{% static 'img/icons/User_alt.svg' %}" alt="User Account">
+      <a href="{% url 'users:account' %}" class="user-icon" aria-label="Личный кабинет">
+        <img src="{% static 'img/icons/User_alt.svg' %}" alt="Личный кабинет">
       </a>
-      <a href="{% url 'cart:detail' %}" class="cart-icon" aria-label="Shopping Cart" style="position:relative;">
-        <img src="{% static 'img/icons/Shopping_bag.svg' %}" alt="Shopping Cart">
+      <a href="{% url 'cart:detail' %}" class="cart-icon" aria-label="Корзина" style="position:relative;">
+        <img src="{% static 'img/icons/Shopping_bag.svg' %}" alt="Корзина">
         {% if cart_count %}<span class="cart-badge">{{ cart_count }}</span>{% endif %}
       </a>
+      <form method="post" action="{% url 'users:logout' %}" class="header-logout-form">
+        {% csrf_token %}
+        <button type="submit" class="header-logout">Выйти</button>
+      </form>
     </div>
   </div>
 </header>
