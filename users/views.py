@@ -50,7 +50,13 @@ class AppLoginView(LoginView):
 
 
 class AppLogoutView(LogoutView):
+    """Выход. Поддерживает и POST (кнопка в шапке), и GET (прямая ссылка/закладка)."""
+
     next_page = reverse_lazy("products:product_list")
+    http_method_names = [*LogoutView.http_method_names, "get"]
+
+    def get(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
+        return self.post(request, *args, **kwargs)
 
 
 class ProfileUpdateView(UpdateView):
