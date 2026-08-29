@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Корзина | Hop & Barley{% endblock %}
+{% block main_attrs %} class="cart-page-wrapper"{% endblock %}
+
+{% block content %}
+<div class="cart-container">
+  <h1 class="cart-title">Корзина</h1>
+
+  {% if cart.is_empty %}
+    <p class="muted">Корзина пуста. <a href="{% url 'products:product_list' %}">Перейти в каталог</a>.</p>
+  {% else %}
+    <div class="cart-items-list" id="cart-items-list">
+      {% for line in cart %}
+        <div class="cart-item" data-price="{{ line.unit_price }}">
+          {% if line.product.image %}
+            <img src="{{ line.product.image.url }}" alt="{{ line.product.name }}" class="cart-item__image">
+          {% else %}
+            <img src="{% static 'img/logo.svg' %}" alt="{{ line.product.name }}" class="cart-item__image">
+          {% endif %}
+          <div class="cart-item__body">
+            <div class="cart-item__details">
+              <h2 class="cart-item__name">
+                <a href="{{ line.product.get_absolute_url }}">{{ line.product.name }}</a>
+              </h2>
+              <div class="cart-item__price-info">
+                <p class="cart-item__price" data-item-total-price>${{ line.subtotal|floatformat:2 }}</p>
+                <span class="cart-item__price-tag">${{ line.unit_price }} / шт.{% if line.product.price_unit %} · {{ line.product.price_unit }}{% endif %}</span>
+              </div>
+              {% if not line.has_enough_stock %}
+                <p class="out-of-stock">На складе только {{ line.product.stock }} шт.</p>
+              {% endif %}
+            </div>
+            <div class="cart-item__actions">
+              <div class="cart-item__quantity-selector">
+                <form class="inline-form" method="post" action="{% url 'cart:update' line.product.id %}">
+                  {% csrf_token %}
+                  <input type="hidden" name="quantity" value="{{ line.quantity|add:'-1' }}">
+                  <button class="quantity-btn-cart" type="submit"><i class="fa-solid fa-minus"></i></button>
+                </form>
+                <form class="inline-form" method="post" action="{% url 'cart:update' line.product.id %}">
+                  {% csrf_token %}
+                  <input class="quantity-value-cart" type="number" name="quantity"
+                         value="{{ line.quantity }}" min="0" max="{{ line.product.stock }}"
+                         style="width:56px;text-align:center;" onchange="this.form.submit()">
+                </form>
+                <form class="inline-form" method="post" action="{% url 'cart:update' line.product.id %}">
+                  {% csrf_token %}
+                  <input type="hidden" name="quantity" value="{{ line.quantity|add:'1' }}">
+                  <button class="quantity-btn-cart" type="submit"><i class="fa-solid fa-plus"></i></button>
+                </form>
+              </div>
+              <form class="inline-form" method="post" action="{% url 'cart:remove' line.product.id %}">
+                {% csrf_token %}
+                <button class="button--remove" type="submit">Удалить <i class="fa-solid fa-xmark"></i></button>
+              </form>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+
+    <div class="cart-summary">
+      <div class="cart-summary__total">
+        <p>Итого</p>
+        <p id="cart-total-price">${{ cart.total|floatformat:2 }}</p>
+      </div>
+      {% if cart.has_stock_issues %}
+        <p class="out-of-stock">Уменьшите количество товаров, которых не хватает на складе.</p>
+      {% elif user.is_authenticated %}
+        <a href="{% url 'checkout:index' %}" class="button button--primary button--checkout">
+          Перейти к оформлению
+        </a>
+      {% else %}
+        <a href="{% url 'users:login' %}?next={% url 'checkout:index' %}"
+           class="button button--primary button--checkout">Войти и оформить</a>
+      {% endif %}
+    </div>
+  {% endif %}
+</div>
+{% endblock %}
