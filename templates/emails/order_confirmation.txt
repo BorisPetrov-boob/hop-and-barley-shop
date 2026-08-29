@@ -1,0 +1,19 @@
+Здравствуйте, {{ order.contact_name }}!
+
+Спасибо за заказ в Hop & Barley.
+
+Номер заказа: {{ order.number }}
+Дата: {{ order.created_at|date:"d.m.Y H:i" }}
+Статус: {{ order.get_status_display }}
+Способ оплаты: {{ order.get_payment_method_display }}
+
+Состав заказа:
+{% for item in items %}  - {{ item.product.name }} — {{ item.quantity }} шт. × ${{ item.price }} = ${{ item.subtotal|floatformat:2 }}
+{% endfor %}
+Итого: ${{ order.total_price|floatformat:2 }}
+
+Адрес доставки:
+{{ order.shipping_address }}
+
+С уважением,
+команда Hop & Barley
