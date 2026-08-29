@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+{% load static humanize %}
+
+{% block title %}Каталог товаров | Hop & Barley{% endblock %}
+
+{% block content %}
+<section class="hero-banner">
+  <img src="{% static 'img/background/hopfen-fields.jpg' %}" alt="Hops" class="hero-banner__image">
+  <div class="hero-banner__overlay"></div>
+</section>
+
+<div class="container main-content-grid">
+  <aside class="sidebar filter-menu">
+    <form class="filter-form" id="catalog-filter" method="get" action="{% url 'products:product_list' %}">
+      <input type="hidden" name="sort" value="{{ active_sort }}">
+
+      <div class="sidebar__section">
+        <h3 class="section-title">Категории</h3>
+        <ul class="category-list">
+          <li>
+            <a href="?{% if search_query %}search={{ search_query }}{% endif %}"
+               class="{% if not active_category %}active{% endif %}">
+              <span>Все товары</span>
+            </a>
+          </li>
+          {% for cat in categories %}
+            <li>
+              <label class="checkbox-container" style="display:block;">
+                <input type="radio" name="category" value="{{ cat.slug }}"
+                       {% if active_category == cat.slug %}checked{% endif %}
+                       onchange="document.getElementById('catalog-filter').submit()">
+                {{ cat.name }} <span class="count">({{ cat.product_count }})</span>
+              </label>
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+
+      <div class="sidebar__section">
+        <h3 class="section-title">Цена</h3>
+        <div class="price-row">
+          <input type="number" name="price_min" step="0.01" min="0" placeholder="от" value="{{ price_min }}">
+          <input type="number" name="price_max" step="0.01" min="0" placeholder="до" value="{{ price_max }}">
+        </div>
+        <button type="submit" class="button button--primary" style="margin-top:10px;width:100%;">
+          Применить
+        </button>
+        <a href="{% url 'products:product_list' %}" class="button button--secondary"
+           style="margin-top:6px;width:100%;">Сбросить</a>
+      </div>
+    </form>
+  </aside>
+
+  <section class="products-area product-grid-section">
+    <div class="search-sort-bar">
+      <div class="search-input-wrapper">
+        <input type="text" name="search" form="catalog-filter" class="search-input"
+               placeholder="Поиск по названию и описанию" value="{{ search_query }}">
+        <button class="search-button" form="catalog-filter" type="submit" aria-label="Search">
+          <i class="fa-solid fa-magnifying-glass"></i>
+        </button>
+      </div>
+      <div class="sort-options">
+        {% for key, opt in sort_options.items %}
+          <button type="submit" name="sort" value="{{ key }}" form="catalog-filter"
+                  class="sort-button {% if active_sort == key %}active-sort{% endif %}">
+            {{ opt.1 }}
+          </button>
+        {% endfor %}
+      </div>
+    </div>
+
+    {% if products %}
+      <div class="product-grid">
+        {% for product in products %}
+          <a href="{{ product.get_absolute_url }}" class="product-card-link">
+            <div class="product-card">
+              {% if product.image %}
+                <img src="{{ product.image.url }}" alt="{{ product.name }}" class="product-card__image">
+              {% else %}
+                <img src="{% static 'img/logo.svg' %}" alt="{{ product.name }}" class="product-card__image">
+              {% endif %}
+              <div class="product-card__info">
+                <h4 class="product-card__name">{{ product.name }}</h4>
+                <p class="product-card__price">${{ product.price }}</p>
+                <p class="product-card__description">
+                  {{ product.description|truncatechars:60 }}
+                </p>
+                <p class="stock-hint">
+                  {% if product.avg_rating %}★ {{ product.avg_rating|floatformat:1 }} ({{ product.review_count }}){% endif %}
+                  {% if not product.in_stock %}<span class="out-of-stock"> · нет в наличии</span>{% endif %}
+                </p>
+              </div>
+            </div>
+          </a>
+        {% endfor %}
+      </div>
+
+      {% if is_paginated %}
+        <div class="pagination">
+          {% if page_obj.has_previous %}
+            <a href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ page_obj.previous_page_number }}"
+               class="pagination__link pagination__link--prev">
+              <i class="fa-solid fa-arrow-left"></i><span>Previous</span>
+            </a>
+          {% else %}
+            <span class="pagination__link pagination__link--prev disabled">
+              <i class="fa-solid fa-arrow-left"></i><span>Previous</span>
+            </span>
+          {% endif %}
+          <div class="pagination-list">
+            {% for num in paginator.page_range %}
+              {% if num == page_obj.number %}
+                <span class="pagination__link active">{{ num }}</span>
+              {% else %}
+                <a href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ num }}"
+                   class="pagination__link">{{ num }}</a>
+              {% endif %}
+            {% endfor %}
+          </div>
+          {% if page_obj.has_next %}
+            <a href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ page_obj.next_page_number }}"
+               class="pagination__link pagination__link--next">
+              <span>Next</span><i class="fa-solid fa-arrow-right"></i>
+            </a>
+          {% else %}
+            <span class="pagination__link pagination__link--next disabled">
+              <span>Next</span><i class="fa-solid fa-arrow-right"></i>
+            </span>
+          {% endif %}
+        </div>
+      {% endif %}
+    {% else %}
+      <p class="muted" style="padding:40px 0;">Ничего не найдено. Попробуйте изменить фильтры.</p>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

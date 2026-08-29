@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}Оформление заказа | Hop & Barley{% endblock %}
+{% block main_attrs %} class="checkout-page-wrapper"{% endblock %}
+
+{% block content %}
+<div class="checkout-container">
+  <h1 class="checkout-title">Оформление заказа</h1>
+
+  <form method="post" action="{% url 'checkout:index' %}">
+    {% csrf_token %}
+    {% if form.non_field_errors %}<div class="form-errors">{{ form.non_field_errors }}</div>{% endif %}
+
+    <section class="checkout-section">
+      <h2 class="checkout-section__title">Доставка и контакты</h2>
+      {% for field in form %}
+        {% if field.name != "payment_method" %}
+          <div class="checkout-form-group">
+            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+            {% if field.errors %}<div class="form-errors">{{ field.errors }}</div>{% endif %}
+          </div>
+        {% endif %}
+      {% endfor %}
+    </section>
+
+    <section class="checkout-section">
+      <h2 class="checkout-section__title">Способ оплаты</h2>
+      <div class="payment-options">
+        {% for radio in form.payment_method %}
+          <label class="radio-option">
+            {{ radio.tag }}
+            <span class="radio-custom"></span>
+            <span class="radio-label">{{ radio.choice_label }}</span>
+          </label>
+        {% endfor %}
+      </div>
+      {% if form.payment_method.errors %}<div class="form-errors">{{ form.payment_method.errors }}</div>{% endif %}
+      <p class="muted">Оплата эмулируется: карта/кошелёк — «оплачено» сразу, наложенный платёж — при получении.</p>
+    </section>
+
+    <section class="checkout-summary">
+      <h2 class="checkout-section__title">Ваш заказ</h2>
+      <table class="order-detail-table">
+        <tbody>
+        {% for line in cart %}
+          <tr>
+            <td>{{ line.product.name }} × {{ line.quantity }}</td>
+            <td style="text-align:right;">${{ line.subtotal|floatformat:2 }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+        <tfoot>
+          <tr><th>Итого</th><th style="text-align:right;">${{ cart.total|floatformat:2 }}</th></tr>
+        </tfoot>
+      </table>
+      <div class="summary-details">
+        <button type="submit" class="button button--primary button--pay">Оплатить</button>
+      </div>
+    </section>
+  </form>
+</div>
+{% endblock %}

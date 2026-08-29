@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ product.name }} | Hop & Barley{% endblock %}
+{% block body_class %}page-product{% endblock %}
+{% block main_attrs %} class="page-product"{% endblock %}
+
+{% block content %}
+<div class="container">
+  <section class="product-details-section">
+    <div class="product-image-container">
+      {% if product.image %}
+        <img src="{{ product.image.url }}" alt="{{ product.name }}" class="product-image">
+      {% else %}
+        <img src="{% static 'img/logo.svg' %}" alt="{{ product.name }}" class="product-image">
+      {% endif %}
+    </div>
+
+    <div class="product-info-column">
+      <div class="product-title-price">
+        <h1 class="product-name">{{ product.name }}</h1>
+        <div class="price-section">
+          {% if product.price_unit %}<span class="price-tag">{{ product.price_unit }}</span>{% endif %}
+          <p class="product-price">${{ product.price }}</p>
+        </div>
+      </div>
+
+      <div class="product-description">
+        {{ product.description|linebreaks }}
+        <p class="stock-hint">
+          Категория: <a href="{{ product.category.get_absolute_url }}">{{ product.category.name }}</a>
+        </p>
+      </div>
+
+      <div class="cart-controls">
+        {% if product.in_stock %}
+          <form method="post" action="{% url 'cart:add' product.id %}">
+            {% csrf_token %}
+            <input type="hidden" name="replace" value="on">
+            <input type="hidden" name="next" value="{% url 'cart:detail' %}">
+            <label for="qty" class="muted">Количество (в наличии: {{ product.stock }})</label>
+            <div class="quantity-counter" style="margin:8px 0;">
+              <input type="number" id="qty" name="quantity" value="{{ cart_qty|default:1 }}"
+                     min="1" max="{{ product.stock }}" style="width:72px;padding:6px;">
+            </div>
+            <button type="submit" class="button button--primary add-to-cart-button">
+              <i class="fa-solid fa-cart-shopping"></i>
+              <span>{% if cart_qty %}Обновить корзину{% else %}В корзину{% endif %}</span>
+            </button>
+          </form>
+        {% else %}
+          <p class="out-of-stock">Нет в наличии</p>
+        {% endif %}
+      </div>
+    </div>
+  </section>
+
+  <section class="reviews-section">
+    <h2 class="reviews-title">Отзывы
+      {% if product.review_count %}
+        — {{ product.avg_rating|floatformat:1 }}★ ({{ product.review_count }}){% endif %}
+    </h2>
+
+    <div class="reviews-grid">
+      {% for review in reviews %}
+        <div class="review-card">
+          <div class="review-rating">
+            {% for _ in "12345"|make_list %}
+              {% if forloop.counter <= review.rating %}
+                <i class="fa-solid fa-star"></i>
+              {% else %}
+                <i class="fa-regular fa-star"></i>
+              {% endif %}
+            {% endfor %}
+          </div>
+          <div class="review-body">
+            <p class="review-text">{{ review.comment|default:"(без комментария)" }}</p>
+          </div>
+          <div class="review-author">
+            <span class="author-name">{{ review.user.display_name }}</span>
+            <span class="muted"> · {{ review.created_at|date:"d.m.Y" }}</span>
+          </div>
+        </div>
+      {% empty %}
+        <p class="muted">Пока нет отзывов.</p>
+      {% endfor %}
+    </div>
+
+    {% if user.is_authenticated %}
+      {% if already_reviewed %}
+        <p class="review-note">Вы уже оставили отзыв на этот товар.</p>
+      {% elif can_review %}
+        <form class="review-form" method="post" action="{% url 'reviews:add' product.slug %}">
+          {% csrf_token %}
+          {% if review_form.non_field_errors %}
+            <div class="form-errors">{{ review_form.non_field_errors }}</div>
+          {% endif %}
+          <div>
+            <label>Оценка</label>
+            <div class="rating-choices">{{ review_form.rating }}</div>
+            {{ review_form.rating.errors }}
+          </div>
+          <div>
+            <label for="{{ review_form.comment.id_for_label }}">Комментарий</label>
+            {{ review_form.comment }}
+            {{ review_form.comment.errors }}
+          </div>
+          <button type="submit" class="button button--primary">Отправить отзыв</button>
+        </form>
+      {% else %}
+        <p class="review-note">Оставить отзыв можно только после покупки товара.</p>
+      {% endif %}
+    {% else %}
+      <p class="review-note">
+        <a href="{% url 'users:login' %}?next={{ request.path }}">Войдите</a>, чтобы оставить отзыв.
+      </p>
+    {% endif %}
+  </section>
+
+  {% if related_products %}
+    <section class="reviews-section">
+      <h2 class="reviews-title">Похожие товары</h2>
+      <div class="product-grid">
+        {% for rp in related_products %}
+          <a href="{{ rp.get_absolute_url }}" class="product-card-link">
+            <div class="product-card">
+              {% if rp.image %}<img src="{{ rp.image.url }}" alt="{{ rp.name }}" class="product-card__image">{% endif %}
+              <div class="product-card__info">
+                <h4 class="product-card__name">{{ rp.name }}</h4>
+                <p class="product-card__price">${{ rp.price }}</p>
+              </div>
+            </div>
+          </a>
+        {% endfor %}
+      </div>
+    </section>
+  {% endif %}
+</div>
+{% endblock %}

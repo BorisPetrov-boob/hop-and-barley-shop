@@ -1,0 +1,14 @@
+Новый заказ в магазине Hop & Barley.
+
+Заказ: {{ order.number }}
+Покупатель: {{ order.user.email }} ({{ order.contact_name }}, {{ order.contact_phone }})
+Сумма: ${{ order.total_price|floatformat:2 }}
+Оплата: {{ order.get_payment_method_display }}
+Статус: {{ order.get_status_display }}
+
+Позиции:
+{% for item in items %}  - {{ item.product.name }} × {{ item.quantity }} = ${{ item.subtotal|floatformat:2 }}
+{% endfor %}
+Доставка: {{ order.shipping_address }}
+
+Открыть в админке: /admin/orders/order/{{ order.pk }}/change/

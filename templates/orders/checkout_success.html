@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}Заказ {{ order.number }} оформлен | Hop & Barley{% endblock %}
+{% block main_attrs %} class="checkout-page-wrapper"{% endblock %}
+
+{% block content %}
+<div class="checkout-container">
+  <h1 class="checkout-title">Спасибо за заказ!</h1>
+  <p>Заказ <strong>{{ order.number }}</strong> принят. Статус: <strong>{{ order.get_status_display }}</strong>.</p>
+  <p class="muted">Подтверждение отправлено на {{ order.contact_email|default:order.user.email }}.</p>
+
+  <table class="order-detail-table">
+    <thead>
+      <tr><th>Товар</th><th>Кол-во</th><th>Цена</th><th>Сумма</th></tr>
+    </thead>
+    <tbody>
+      {% for item in order.items.all %}
+        <tr>
+          <td>{{ item.product.name }}</td>
+          <td>{{ item.quantity }}</td>
+          <td>${{ item.price }}</td>
+          <td>${{ item.subtotal|floatformat:2 }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+    <tfoot>
+      <tr><th colspan="3">Итого</th><th>${{ order.total_price|floatformat:2 }}</th></tr>
+    </tfoot>
+  </table>
+
+  <p style="margin-top:20px;">
+    <a href="{% url 'users:account' %}" class="button button--secondary">История заказов</a>
+    <a href="{% url 'products:product_list' %}" class="button button--primary">В каталог</a>
+  </p>
+</div>
+{% endblock %}
