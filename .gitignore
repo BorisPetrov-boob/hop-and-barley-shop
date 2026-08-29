@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.Python
+
+# Виртуальные окружения
+.venv/
+venv/
+
+# Django
+*.sqlite3
+local.sqlite3
+/media/
+/staticfiles/
+/test_media/
+
+# Окружение
+.env
+.env.*
+!.env.example
+
+# Тесты / покрытие
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# IDE / ОС
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Служебное
+_template/

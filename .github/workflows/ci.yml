@@ -1,0 +1,75 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Линтеры и типы
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - run: uv sync --extra dev --frozen
+      - name: ruff
+        run: uv run ruff check --output-format=github .
+      - name: ruff format --check
+        run: uv run ruff format --check .
+      - name: mypy
+        run: uv run mypy .
+
+  test:
+    name: Тесты (PostgreSQL)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: hopbarley
+          POSTGRES_USER: hopbarley
+          POSTGRES_PASSWORD: hopbarley
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U hopbarley"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DJANGO_SETTINGS_MODULE: config.settings.test
+      DATABASE_URL: postgres://hopbarley:hopbarley@localhost:5432/hopbarley
+      DJANGO_SECRET_KEY: ci-secret-key-long-enough-for-tests-000000000000
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - run: uv sync --extra dev --frozen
+      - name: Проверка миграций
+        run: uv run python manage.py makemigrations --check --dry-run
+      - name: pytest + покрытие
+        run: uv run pytest --cov --cov-report=xml --cov-report=term-missing --cov-fail-under=80
+      - uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: coverage.xml
+
+  docker:
+    name: Сборка Docker-образа
+    runs-on: ubuntu-latest
+    needs: [quality, test]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          tags: hop-and-barley:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

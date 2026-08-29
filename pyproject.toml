@@ -1,0 +1,135 @@
+[project]
+name = "hop-and-barley-shop"
+version = "0.1.0"
+description = "Hop & Barley — интернет-магазин для домашних пивоваров на Django / DRF."
+readme = "README.md"
+requires-python = ">=3.13"
+license = { text = "MIT" }
+authors = [{ name = "yusk8039", email = "yusk8039@gmail.com" }]
+
+dependencies = [
+    "django==5.2.*",
+    "djangorestframework==3.16.*",
+    "djangorestframework-simplejwt==5.4.*",
+    "drf-spectacular==0.28.*",
+    "django-filter==25.*",
+    "psycopg[binary]==3.2.*",
+    "Pillow==11.*",
+    "django-environ==0.12.*",
+    "whitenoise==6.9.*",
+    "gunicorn==23.*",
+    "graphene-django==3.2.*",
+    "drf-spectacular-sidecar==2025.*",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest==8.*",
+    "pytest-django==4.*",
+    "pytest-cov==6.*",
+    "factory-boy==3.3.*",
+    "ruff==0.9.*",
+    "mypy==1.*",
+    "django-stubs[compatible-mypy]==5.*",
+    "djangorestframework-stubs[compatible-mypy]==3.*",
+    "types-requests",
+]
+
+# Проект-приложение Django: пакет не собирается и не устанавливается,
+# uv управляет только деревом зависимостей в .venv.
+[tool.uv]
+package = false
+
+# ---------------------------------------------------------------------------
+# Ruff — линтер + форматтер (заменяет flake8 / isort / black).
+# ---------------------------------------------------------------------------
+[tool.ruff]
+target-version = "py313"
+line-length = 100
+extend-exclude = ["*/migrations/*", "_template", "manage.py"]
+
+[tool.ruff.lint]
+select = [
+    "E", "F", "W",   # pycodestyle / pyflakes  (аналог flake8)
+    "I",             # isort
+    "UP",            # pyupgrade
+    "B",             # flake8-bugbear
+    "DJ",            # flake8-django
+    "C4",            # flake8-comprehensions
+    "SIM",           # flake8-simplify
+]
+ignore = ["B008"]  # разрешаем вызовы в аргументах по умолчанию (DRF/Django стиль)
+
+[tool.ruff.lint.per-file-ignores]
+"*/tests/*" = ["S101"]
+"conftest.py" = ["E402"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["config", "common", "products", "orders", "users", "reviews", "payments", "analytics"]
+
+# ---------------------------------------------------------------------------
+# mypy — статическая типизация.
+# ---------------------------------------------------------------------------
+[tool.mypy]
+python_version = "3.13"
+plugins = ["mypy_django_plugin.main", "mypy_drf_plugin.main"]
+# Прагматичный уровень: проверяем тела функций и явные ошибки, но не требуем
+# полной строгой типизации поверх django-stubs (это дало бы сотни ложных
+# срабатываний на ORM/DRF-дженериках). Доменный код аннотирован вручную.
+check_untyped_defs = true
+warn_redundant_casts = true
+warn_unused_configs = true
+no_implicit_optional = true
+disallow_untyped_defs = false
+warn_return_any = false
+exclude = ['/migrations/', '_template', 'tests/', 'manage.py']
+
+[[tool.mypy.overrides]]
+module = ["graphene_django.*", "graphene.*", "factory.*", "environ.*"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+# Тонкий «клеевой» слой Django/DRF (view + сериализаторы + urls): здесь
+# django-stubs даёт много ложных срабатываний на дженериках CBV/ViewSet и на
+# `request.user: User | AnonymousUser`. Бизнес-логика (services, cart, models,
+# querysets, forms, schema) типизируется строго и проверяется.
+module = [
+    "*.admin",
+    "*.migrations.*",
+    "*.views",
+    "*.api.views",
+    "*.api.serializers",
+    "analytics.views",
+    "config.urls",
+]
+ignore_errors = true
+
+[tool.django-stubs]
+django_settings_module = "config.settings.test"
+
+# ---------------------------------------------------------------------------
+# pytest.
+# ---------------------------------------------------------------------------
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings.test"
+python_files = ["test_*.py", "tests.py"]
+addopts = "-ra --strict-markers --cov=. --cov-report=term-missing --cov-report=xml"
+testpaths = ["tests"]
+
+[tool.coverage.run]
+branch = true
+source = ["."]
+omit = [
+    "*/migrations/*",
+    "*/tests/*",
+    "config/wsgi.py",
+    "config/asgi.py",
+    "manage.py",
+    "_template/*",
+    "*/settings/*",
+]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+exclude_lines = ["pragma: no cover", "if TYPE_CHECKING:", "raise NotImplementedError"]
