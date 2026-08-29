@@ -43,6 +43,8 @@ class OrderViewSet(
     http_method_names = ["get", "post", "patch", "delete", "head", "options"]
 
     def get_queryset(self) -> QuerySet[Order]:
+        if getattr(self, "swagger_fake_view", False):  # генерация схемы без аутентификации
+            return Order.objects.none()
         return (
             Order.objects.filter(user=self.request.user)
             .prefetch_related("items__product")
