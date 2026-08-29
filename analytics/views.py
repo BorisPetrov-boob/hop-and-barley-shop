@@ -30,6 +30,10 @@ class AuthGraphQLView(GraphQLView):
         return super().dispatch(request, *args, **kwargs)
 
 
+# GraphiQL-IDE: включён в DEBUG, а также если GRAPHIQL_ENABLED=1 (для демо-стенда).
+# Резолверы всё равно требуют is_staff, поэтому включение самой IDE безопасно.
+_graphiql_enabled = getattr(settings, "GRAPHIQL_ENABLED", settings.DEBUG)
+
 analytics_graphql_view = csrf_exempt(
-    AuthGraphQLView.as_view(graphiql=settings.DEBUG, schema=schema)
+    AuthGraphQLView.as_view(graphiql=_graphiql_enabled, schema=schema)
 )
