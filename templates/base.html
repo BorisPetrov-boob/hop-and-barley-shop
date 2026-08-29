@@ -1,0 +1,77 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Hop & Barley{% endblock %}</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="{% static 'css/main.css' %}">
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+  {% block extra_head %}{% endblock %}
+</head>
+<body class="{% block body_class %}{% endblock %}{% if user.is_authenticated %} user-logged-in{% endif %}">
+
+<header>
+  <div class="header-container">
+    <a href="{% url 'products:product_list' %}" class="header__logo">
+      <img src="{% static 'img/logo.svg' %}" alt="Hop & Barley Logo">
+      <p class="logo-text">Hop &amp; Barley</p>
+    </a>
+    <nav class="header__nav">
+      <ul>
+        <li><a href="{% url 'products:product_list' %}">Products</a></li>
+        <li><a href="#">Guides &amp; Recipes</a></li>
+        <li><a href="#">Community</a></li>
+        <li><a href="#">Resources</a></li>
+        <li><a href="#">Contact</a></li>
+      </ul>
+    </nav>
+
+    <div class="header__auth-buttons" id="auth-guest">
+      <a href="{% url 'users:login' %}" class="button button--secondary">Sign in</a>
+      <a href="{% url 'users:register' %}" class="button button--primary">Register</a>
+    </div>
+
+    <div class="header__user-actions" id="auth-user">
+      <a href="{% url 'users:account' %}" class="user-icon" aria-label="My Account">
+        <img src="{% static 'img/icons/User_alt.svg' %}" alt="User Account">
+      </a>
+      <a href="{% url 'cart:detail' %}" class="cart-icon" aria-label="Shopping Cart" style="position:relative;">
+        <img src="{% static 'img/icons/Shopping_bag.svg' %}" alt="Shopping Cart">
+        {% if cart_count %}<span class="cart-badge">{{ cart_count }}</span>{% endif %}
+      </a>
+    </div>
+  </div>
+</header>
+
+{% include "partials/_messages.html" %}
+
+<main{% block main_attrs %}{% endblock %}>
+  {% block content %}{% endblock %}
+</main>
+
+<footer>
+  <img src="{% static 'img/background/image-footer.svg' %}" alt="Hop & Barley Hops Logo" class="footer__hops-logo">
+  <nav class="footer__nav">
+    <ul>
+      <li><a href="#">Contact</a></li>
+      <li><a href="#">FAQ</a></li>
+      <li><a href="#">Community</a></li>
+      <li><a href="#">Resources</a></li>
+      <li><a href="#">License</a></li>
+    </ul>
+  </nav>
+  <p class="footer__copyright">© Hop &amp; Barley 2025. All rights reserved</p>
+</footer>
+
+<script src="{% static 'js/main.js' %}"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>
