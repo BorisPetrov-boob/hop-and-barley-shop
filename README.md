@@ -39,13 +39,13 @@
 * [Модель данных](#модель-данных)
 * [Веб‑интерфейс](#веб-интерфейс)
 * [REST API и JWT](#rest-api-и-jwt)
-* [GraphQL‑аналитика](#graphql-аналитика-бонус)
+* [GraphQL‑аналитика](#graphql-аналитика)
 * [Админка](#админ-панель)
 * [Тесты, линтеры, типы](#тесты-линтеры-типы)
 * [CI/CD](#cicd)
 * [Git workflow](#git-workflow)
 * [Чек‑лист по ТЗ](#чек-лист-по-тз)
-* [Прогон чек‑листа перед сдачей](#прогон-чек-листа-перед-сдачей)
+* [Проверка](#проверка)
 
 ---
 
@@ -324,13 +324,14 @@ make fmt         # ruff format + ruff check --fix
 make type        # mypy
 ```
 
+---
+
 ## CI/CD
 
-`.github/workflows/ci.yml`
+`.github/workflows/ci.yml`:
 
 1. **quality** — `ruff check`, `ruff format --check`, `mypy`;
-2. **test** — `makemigrations --check` + `pytest` 
-   **реального PostgreSQL** (service container), порог 80 %;
+2. **test** — `makemigrations --check` + `pytest` против **реального PostgreSQL** (service container), порог 80 %;
 3. **docker** — сборка образа (`docker/build-push-action`, кеш GHA).
 
 ---
@@ -359,9 +360,10 @@ make type        # mypy
 
 ---
 
+## Проверка
 
-
-Проверено
+Проверено на свежем клоне репозитория (`git clone` → `docker compose up --build`),
+БД — PostgreSQL 17 в контейнере.
 
 | Пункт | Статус | Как проверено |
 |-------|--------|---------------|
@@ -380,5 +382,4 @@ make type        # mypy
 | Базовые тесты проходят | ✅ | `pytest`: **52 passed**, покрытие **88 %** (порог CI — 80 %); прогнано и на SQLite, и на PostgreSQL из compose |
 | README полон и понятен | ✅ | Этот файл: запуск (Docker/uv), переменные, модель данных, API + примеры curl с JWT, GraphQL, CI, чек‑лист |
 | Коммиты осмысленные, ветки используются | ✅ | `main` ← `develop` ← 6 × `feature/*` (merge `--no-ff`), сообщения в стиле Conventional Commits |
-| Чек‑лист приложен | ✅ | Разделы [«Чек‑лист по ТЗ»](#чек-лист-по-тз)|
-
+| Чек‑лист приложен | ✅ | Раздел [«Чек‑лист по ТЗ»](#чек-лист-по-тз) |
